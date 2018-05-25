@@ -1,6 +1,9 @@
 
 #include <avr/pgmspace.h> 
 
+#include <EEPROM.h>
+
+
 //PC5 A/BB  H:RAM-A選択 L:RAM-B選択
 //PC4 SE    H:内部バッファRAM手動切り替え L:内部バッファRAM自動切り替え
 //PC3 A3    内部バッファRAMアドレス(MSB)
@@ -30,25 +33,29 @@
 const PROGMEM unsigned int font_tbl_r[2][16] =
 {
   {
-    0x0000, 0x2040, 0x2844, 0x2BFC, 0xA844, 0xA844, 0xA044, 0xA7FE,
-    0xA040, 0xA040, 0x20A0, 0x20A0, 0x2110, 0x2208, 0x2406, 0x0000    //快
-  },
-  {
-    0x0000, 0x6044, 0x37FC, 0x0040, 0x07FC, 0x0444, 0xE444, 0x27FC,
-    0x2140, 0x2260, 0x2450, 0x2848, 0x2044, 0x5000, 0x8FFE, 0x0000    //速
+    0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
+    0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,    //快
   }
+  ,
+  {
+    0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
+    0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,    //快
+  }
+  ,
 };
 
 const PROGMEM unsigned int font_tbl_g[2][16] =
 {
   {
-    0x0000, 0x2040, 0x2844, 0x2BFC, 0xA844, 0xA844, 0xA044, 0xA7FE,
-    0xA040, 0xA040, 0x20A0, 0x20A0, 0x2110, 0x2208, 0x2406, 0x0000    //快
-  },
-  {
-    0x0000, 0x6044, 0x37FC, 0x0040, 0x07FC, 0x0444, 0xE444, 0x27FC,
-    0x2140, 0x2260, 0x2450, 0x2848, 0x2044, 0x5000, 0x8FFE, 0x0000    //速
+    0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
+    0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,    //快
   }
+  ,
+  {
+    0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
+    0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,    //快
+  }
+  ,
 };
 
 void send_data(unsigned char iADDRESS_y, unsigned long *idata_r, unsigned long *idata_g);
@@ -66,13 +73,15 @@ void send_data(unsigned char iADDRESS_y, unsigned long *idata_r, unsigned long *
     digitalWrite(CLK, LOW);
     if ((red & 0x80000000UL) != 0) {    //MSBから送信していく
       digitalWrite(DR, HIGH);
-    } else {
+    } 
+    else {
       digitalWrite(DR, LOW);
     }
 
     if ((green & 0x80000000UL) != 0) {  //MSBから送信していく
       digitalWrite(DG, HIGH);
-    } else {
+    } 
+    else {
       digitalWrite(DG, LOW);
     }
     red = red << 1;       //次の列へ
@@ -94,7 +103,9 @@ void send_data(unsigned char iADDRESS_y, unsigned long *idata_r, unsigned long *
   digitalWrite(ALE, LOW);
 }
 
+static unsigned long time;
 void setup() {
+  Serial4.begin(9600);
   pinMode(AB, OUTPUT);
   pinMode(SE, OUTPUT);
   pinMode(ADDRESS3, OUTPUT);
@@ -111,6 +122,12 @@ void setup() {
 
   Serial.begin(9600);
   delay(100);
+
+  byte* rdata = (byte*)&time;
+  for(int i=0;i<sizeof(time);i++){
+    rdata[i] = EEPROM.read(i);
+  }
+  Serial.println(time);
 }
 
 unsigned int disp_buf_r[2][16];
@@ -120,6 +137,9 @@ void loop() {
   int i;
   unsigned long red;
   unsigned long green;
+  delay(1000);
+
+  time++;
 
   for (i = 0; i < 16; i++) {
     disp_buf_r[1][i] = pgm_read_word(&font_tbl_r[0][i]);
@@ -134,5 +154,16 @@ void loop() {
     green = (green << 16) | disp_buf_g[0][i];  //16bit+16bit=32bit(1行)
     send_data(i, &red, &green);                //1行描画
   }
+
+
+  if(time%601==0){
+    byte* wdata = (byte*)&time;
+    for(i=0;i<sizeof(time);i++){
+      EEPROM.write(i, wdata[i]);
+    }
+    Serial.println(time);
+  }
 }
+
+
 
