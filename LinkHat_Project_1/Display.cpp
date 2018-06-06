@@ -1,0 +1,169 @@
+
+#include "Display.h"
+
+/* コンストラクタ */
+Display::Display(void)
+{
+#ifdef USE_FONT
+     _charactors = new Charactors();
+#endif // USE_FONT
+}
+
+/* 初期化処理 */
+void Display::begin(DisplayDevice* dev)
+{
+    Serial.println("Display.begin()");
+    _dev = dev;
+    
+    if (_dev!= NULL) {
+      _dev->begin();
+    }
+}
+
+/* ダイナミック点灯処理 */
+void Display::update(void)
+{
+    if (_dev!= NULL) {
+      _dev->cyclicHandler();
+      //Serial.print("U");
+    }
+    //else Serial.print("*");
+}
+
+#ifdef USE_FONT
+/* キャラクターを描画 */
+void Display::_drawChar(Charactors::font_t font, int x, int y, DisplayDevice::disp_pixel_data_t pixel, DisplayDevice::disp_pixel_data_t back, char num)
+{
+    int i,j;
+    int width, height;
+
+    // ASCIIコード '@' を 0 としたときのキャラクター番号を表示する仕様とする。
+    if (num < '@') return;
+
+    _charactors->getSize(font, &width, &height);
+
+    if (     width <=  8){
+        uint8_t *pData = (uint8_t*)_charactors->getChar(font, num - '@');
+        for (j = 0; j<height; j++)
+        {
+            for (i = 0; i<width; i++)
+            {
+                _dev->setPixel(i, j, ( (pData[j] & (1u << (width - i))) != 0)? pixel: back);    
+            }
+        }
+    }
+    else if (width <= 16) {
+        uint16_t *pData = (uint16_t*)_charactors->getChar(font, num - '@');
+        for (j = 0; j<height; j++)
+        {
+            for (i = 0; i<width; i++)
+            {
+                _dev->setPixel(i, j, ( (pData[j] & (1u << (width - i))) != 0)? pixel: back);    
+            }
+        }
+    }     
+    else if (width <= 32) {
+        uint32_t *pData = (uint32_t*)_charactors->getChar(font, num - '@');
+        for (j = 0; j<height; j++)
+        {
+            for (i = 0; i<width; i++)
+            {
+                _dev->setPixel(i, j, ( (pData[j] & (1lu << (width - i))) != 0)? pixel: back);    
+            }
+        }
+    }
+    else if (width <= 64) {
+        uint64_t *pData = (uint64_t*)_charactors->getChar(font, num - '@');
+        for (j = 0; j<height; j++)
+        {
+            for (i = 0; i<width; i++)
+            {
+                _dev->setPixel(i, j, ( (pData[j] & (1llu << (width - i))) != 0)? pixel: back);    
+            }
+        }
+    }
+    else {
+    }    
+}
+
+/* 文字列を描画 */
+void Display::_drawString(Charactors::font_t font, int x, int y, DisplayDevice::disp_pixel_data_t pixel, DisplayDevice::disp_pixel_data_t back, char* str)
+{
+    int width, height;
+
+    _charactors->getSize(font, &width, &height);
+    while (*str != '\0') {
+        _drawChar( font, x, y, pixel, back, *str);
+        x += width;
+        str++;
+    }
+}
+#endif // USE_FONT
+
+/* 動作を描く */
+void Display::showMotion(motion_t motion)
+{
+    DisplayDevice::disp_pixel_data_t pixelData;
+    DisplayDevice::disp_pixel_data_t backData;
+    
+    backData.rgb8.red =0;
+    backData.rgb8.green = 0;
+    backData.rgb8.blue = 0;
+
+    switch(motion)
+    {
+        case motion_idle:    /* 待ち受け */
+          pixelData.rgb8.red =   0xFFu;
+          pixelData.rgb8.green = 0x00u;
+          pixelData.rgb8.blue =  0x00u;
+#ifdef USE_FONT
+//          _drawString(Charactors::font_type_8x16, 0, 0, pixelData, backData, "@@@@");
+          _drawChar(Charactors::font_type_32x16, 0, 0, pixelData, backData, '@');
+#else // USE_FONT
+          if (_dev!= NUL) {
+            _dev->setLed(pixelData);
+          }
+#endif // USE_FONT
+          break;
+        case motion_yes:    /* いいね */
+          pixelData.rgb8.red =   0x00u;
+          pixelData.rgb8.green = 0xFFu;
+          pixelData.rgb8.blue =  0x00u;
+#ifdef USE_FONT
+          _drawChar(Charactors::font_type_32x16, 0, 0, pixelData, backData, 'A');
+#else // USE_FONT
+          if (_dev!= NUL) {
+            _dev->setLed(pixelData);
+          }
+#endif // USE_FONT
+            break;
+        case motion_wonder:  /* ？ */
+          pixelData.rgb8.red =   0xFFu;
+          pixelData.rgb8.green = 0xFFu;
+          pixelData.rgb8.blue =  0x00u;
+#ifdef USE_FONT
+          _drawChar(Charactors::font_type_32x16, 0, 0, pixelData, backData, 'B');
+#else // USE_FONT
+          if (_dev!= NUL) {
+            _dev->setLed(pixelData);
+          }
+#endif // USE_FONT
+            break;
+        default:
+            break;
+    }
+}
+
+/* 周期実行処理 */
+#define CYCLIC_INTERVAL 10
+void Display::cyclicHandler(void)
+{
+    static uint16_t cntdown = CYCLIC_INTERVAL;
+    if (cntdown == 0)
+    {
+        update();
+
+        cntdown = CYCLIC_INTERVAL;
+    }
+    else cntdown--;
+}

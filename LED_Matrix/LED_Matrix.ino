@@ -17,45 +17,56 @@
 //PB1 DR    H:green L:消灯nnnnn
 //PB0 DG    H:red L:消灯
 
-#define SE  3
-#define AB  2
-#define ADDRESS3  19
-#define ADDRESS2  18
-#define ADDRESS1  1
-#define ADDRESS0  0
-#define DG  9
-#define CLK  8
-#define WE  7
-#define DR  6
-#define ALE 5
+#define SE  0xff//
+#define AB  18//
+#define ADDRESS3  3
+#define ADDRESS2  4
+#define ADDRESS1  6
+#define ADDRESS0  9
+#define DG  10
+#define CLK  14
+#define WE  15
+#define DR  16
+#define ALE 17
 
 
 const PROGMEM unsigned int font_tbl_r[2][16] =
 {
   {
-    0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
-    0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,    //快
+    0x0000, 0x2040, 0x2844, 0x2BFC, 0xA844, 0xA844, 0xA044, 0xA7FE,
+    0xA040, 0xA040, 0x20A0, 0x20A0, 0x2110, 0x2208, 0x2406, 0x0000    //快
   }
   ,
   {
-    0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
-    0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,    //快
+    0x0000, 0x6044, 0x37FC, 0x0040, 0x07FC, 0x0444, 0xE444, 0x27FC,
+    0x2140, 0x2260, 0x2450, 0x2848, 0x2044, 0x5000, 0x8FFE, 0x0000    //速
   }
-  ,
 };
 
 const PROGMEM unsigned int font_tbl_g[2][16] =
 {
   {
-    0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
-    0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,    //快
+    0x0000, 0x2040, 0x2844, 0x2BFC, 0xA844, 0xA844, 0xA044, 0xA7FE,
+    0xA040, 0xA040, 0x20A0, 0x20A0, 0x2110, 0x2208, 0x2406, 0x0000    //快
   }
   ,
   {
-    0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
-    0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,    //快
+    0x0000, 0x6044, 0x37FC, 0x0040, 0x07FC, 0x0444, 0xE444, 0x27FC,
+    0x2140, 0x2260, 0x2450, 0x2848, 0x2044, 0x5000, 0x8FFE, 0x0000    //速
+  }
+};
+
+const PROGMEM unsigned int font_tbl_g2[2][16] =
+{
+  {
+    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
   }
   ,
+  {
+    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+  }
 };
 
 void send_data(unsigned char iADDRESS_y, unsigned long *idata_r, unsigned long *idata_g);
@@ -105,9 +116,21 @@ void send_data(unsigned char iADDRESS_y, unsigned long *idata_r, unsigned long *
 
 static unsigned long time;
 void setup() {
-  Serial4.begin(9600);
+  //  Serial4.begin(9600);
+  digitalWrite(ADDRESS0, LOW);
+  digitalWrite(ADDRESS1, LOW);
+  digitalWrite(ADDRESS2, LOW);
+  digitalWrite(ADDRESS3, LOW);
+  digitalWrite(CLK, LOW);
+  digitalWrite(WE, LOW);
+  digitalWrite(ALE, LOW);
+  digitalWrite(DR, LOW);
+  digitalWrite(DG, LOW);
+  digitalWrite(AB, LOW);
+
+
   pinMode(AB, OUTPUT);
-  pinMode(SE, OUTPUT);
+  //pinMode(SE, OUTPUT);
   pinMode(ADDRESS3, OUTPUT);
   pinMode(ADDRESS2, OUTPUT);
   pinMode(ADDRESS1, OUTPUT);
@@ -118,16 +141,11 @@ void setup() {
   pinMode(DR, OUTPUT);
   pinMode(DG, OUTPUT);
 
-  digitalWrite(SE, LOW);
+  //  digitalWrite(SE, LOW);
 
   Serial.begin(9600);
-  delay(100);
 
-  byte* rdata = (byte*)&time;
-  for(int i=0;i<sizeof(time);i++){
-    rdata[i] = EEPROM.read(i);
-  }
-  Serial.println(time);
+  //  Serial.println(time);
 }
 
 unsigned int disp_buf_r[2][16];
@@ -141,11 +159,23 @@ void loop() {
 
   time++;
 
-  for (i = 0; i < 16; i++) {
-    disp_buf_r[1][i] = pgm_read_word(&font_tbl_r[0][i]);
-    disp_buf_r[0][i] = pgm_read_word(&font_tbl_r[1][i]);
-    disp_buf_g[1][i] = pgm_read_word(&font_tbl_g[0][i]);
-    disp_buf_g[0][i] = pgm_read_word(&font_tbl_g[1][i]);
+  if(time%2){
+    Serial.println("eeee");
+    for (i = 0; i < 16; i++) {
+      disp_buf_r[1][i] = pgm_read_word(&font_tbl_r[0][i]);
+      disp_buf_r[0][i] = pgm_read_word(&font_tbl_r[1][i]);
+      disp_buf_g[1][i] = pgm_read_word(&font_tbl_g2[0][i]);
+      disp_buf_g[0][i] = pgm_read_word(&font_tbl_g2[1][i]);
+    }
+  }
+  else{
+    Serial.println("fffff");
+    for (i = 0; i < 16; i++) {
+      disp_buf_r[1][i] = pgm_read_word(&font_tbl_r[0][i]);
+      disp_buf_r[0][i] = pgm_read_word(&font_tbl_r[1][i]);
+      disp_buf_g[1][i] = pgm_read_word(&font_tbl_g[0][i]);
+      disp_buf_g[0][i] = pgm_read_word(&font_tbl_g[1][i]);
+    }
   }
   for (i = 0; i < 16; i++) {
     red = disp_buf_r[1][i];
@@ -154,16 +184,12 @@ void loop() {
     green = (green << 16) | disp_buf_g[0][i];  //16bit+16bit=32bit(1行)
     send_data(i, &red, &green);                //1行描画
   }
-
-
-  if(time%601==0){
-    byte* wdata = (byte*)&time;
-    for(i=0;i<sizeof(time);i++){
-      EEPROM.write(i, wdata[i]);
-    }
-    Serial.println(time);
-  }
 }
+
+
+
+
+
 
 
 
