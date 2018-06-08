@@ -4,6 +4,7 @@
 /* コンストラクタ */
 Display::Display(void)
 {
+    _dev = NULL;
 #ifdef USE_FONT
      _charactors = new Charactors();
 #endif // USE_FONT
@@ -31,11 +32,26 @@ void Display::update(void)
 }
 
 #ifdef USE_FONT
+
+//#define DEBUG_DRAW_CHAR
+
 /* キャラクターを描画 */
 void Display::_drawChar(Charactors::font_t font, int x, int y, DisplayDevice::disp_pixel_data_t pixel, DisplayDevice::disp_pixel_data_t back, char num)
 {
     int i,j;
     int width, height;
+
+#ifdef DEBUG_DRAW_CHAR
+    Serial.print("_drawChar(");
+    Serial.print(font);
+    Serial.print(",");
+    Serial.print(x);
+    Serial.print(",");
+    Serial.print(y);
+    Serial.print(",");
+    Serial.print(num);
+    Serial.println(")");
+#endif // DEBUG_DRAW_CHAR    
 
     // ASCIIコード '@' を 0 としたときのキャラクター番号を表示する仕様とする。
     if (num < '@') return;
@@ -48,8 +64,14 @@ void Display::_drawChar(Charactors::font_t font, int x, int y, DisplayDevice::di
         {
             for (i = 0; i<width; i++)
             {
-                _dev->setPixel(i, j, ( (pData[j] & (1u << (width - i))) != 0)? pixel: back);    
+                _dev->setPixel(x + i, y + j, ( (pData[j] & (1u << (width - i))) != 0)? pixel: back);    
+#ifdef DEBUG_DRAW_CHAR
+                Serial.print(( (pData[j] & (1u << (width - i))) != 0)? "O": "_");    
+#endif //DEBUG_DRAW_CHAR
             }
+#ifdef DEBUG_DRAW_CHAR
+            Serial.println();
+#endif //DEBUG_DRAW_CHAR
         }
     }
     else if (width <= 16) {
@@ -58,8 +80,14 @@ void Display::_drawChar(Charactors::font_t font, int x, int y, DisplayDevice::di
         {
             for (i = 0; i<width; i++)
             {
-                _dev->setPixel(i, j, ( (pData[j] & (1u << (width - i))) != 0)? pixel: back);    
+                _dev->setPixel(x + i, y + j, ( (pData[j] & (1u << (width - i))) != 0)? pixel: back);    
+#ifdef DEBUG_DRAW_CHAR
+                Serial.print(( (pData[j] & (1u << (width - i))) != 0)? "O": "_");    
+#endif //DEBUG_DRAW_CHAR
             }
+#ifdef DEBUG_DRAW_CHAR
+            Serial.println();
+#endif //DEBUG_DRAW_CHAR
         }
     }     
     else if (width <= 32) {
@@ -68,8 +96,14 @@ void Display::_drawChar(Charactors::font_t font, int x, int y, DisplayDevice::di
         {
             for (i = 0; i<width; i++)
             {
-                _dev->setPixel(i, j, ( (pData[j] & (1lu << (width - i))) != 0)? pixel: back);    
+                _dev->setPixel(x + i, y + j, ( (pData[j] & (1lu << (width - i))) != 0)? pixel: back);    
+#ifdef DEBUG_DRAW_CHAR
+                Serial.print(( (pData[j] & (1u << (width - i))) != 0)? "O": "_");    
+#endif //DEBUG_DRAW_CHAR
             }
+#ifdef DEBUG_DRAW_CHAR
+            Serial.println();
+#endif //DEBUG_DRAW_CHAR
         }
     }
     else if (width <= 64) {
@@ -78,12 +112,21 @@ void Display::_drawChar(Charactors::font_t font, int x, int y, DisplayDevice::di
         {
             for (i = 0; i<width; i++)
             {
-                _dev->setPixel(i, j, ( (pData[j] & (1llu << (width - i))) != 0)? pixel: back);    
+                _dev->setPixel(x + i, y + j, ( (pData[j] & (1llu << (width - i))) != 0)? pixel: back);    
+#ifdef DEBUG_DRAW_CHAR
+                Serial.print(( (pData[j] & (1u << (width - i))) != 0)? "O": "_");    
+#endif //DEBUG_DRAW_CHAR
             }
+#ifdef DEBUG_DRAW_CHAR
+            Serial.println();
+#endif //DEBUG_DRAW_CHAR
         }
     }
     else {
     }    
+#ifdef DEBUG_DRAW_CHAR
+    Serial.println();
+#endif //DEBUG_DRAW_CHAR
 }
 
 /* 文字列を描画 */
@@ -113,12 +156,18 @@ void Display::showMotion(motion_t motion)
     switch(motion)
     {
         case motion_idle:    /* 待ち受け */
-          pixelData.rgb8.red =   0xFFu;
-          pixelData.rgb8.green = 0x00u;
+          pixelData.rgb8.red =   0x00u;
+          pixelData.rgb8.green = 0xFFu;
           pixelData.rgb8.blue =  0x00u;
 #ifdef USE_FONT
-//          _drawString(Charactors::font_type_8x16, 0, 0, pixelData, backData, "@@@@");
-          _drawChar(Charactors::font_type_32x16, 0, 0, pixelData, backData, '@');
+//          _drawString(Charactors::font_type_8x16, 0, 0, pixelData, backData, "ACCB");
+          _drawChar(
+ #ifdef USE_FONT32X32
+              Charactors::font_type_32x32,
+ #else // USE_FONT32X32
+              Charactors::font_type_32x16,
+ #endif // USE_FONT32X32
+              0, 0, pixelData, backData, '@');
 #else // USE_FONT
           if (_dev!= NUL) {
             _dev->setLed(pixelData);
@@ -127,10 +176,16 @@ void Display::showMotion(motion_t motion)
           break;
         case motion_yes:    /* いいね */
           pixelData.rgb8.red =   0x00u;
-          pixelData.rgb8.green = 0xFFu;
-          pixelData.rgb8.blue =  0x00u;
+          pixelData.rgb8.green = 0x00u;
+          pixelData.rgb8.blue =  0xFFu;
 #ifdef USE_FONT
-          _drawChar(Charactors::font_type_32x16, 0, 0, pixelData, backData, 'A');
+          _drawChar(
+ #ifdef USE_FONT32X32
+                    Charactors::font_type_32x32,
+ #else // USE_FONT32X32
+                    Charactors::font_type_32x16,
+ #endif // USE_FONT32X32
+                    0, 0, pixelData, backData, 'A');
 #else // USE_FONT
           if (_dev!= NUL) {
             _dev->setLed(pixelData);
@@ -139,10 +194,16 @@ void Display::showMotion(motion_t motion)
             break;
         case motion_wonder:  /* ？ */
           pixelData.rgb8.red =   0xFFu;
-          pixelData.rgb8.green = 0xFFu;
+          pixelData.rgb8.green = 0x00u;
           pixelData.rgb8.blue =  0x00u;
 #ifdef USE_FONT
-          _drawChar(Charactors::font_type_32x16, 0, 0, pixelData, backData, 'B');
+          _drawChar(
+ #ifdef USE_FONT32X32
+                    Charactors::font_type_32x32,
+ #else // USE_FONT32X32
+                    Charactors::font_type_32x16,
+ #endif // USE_FONT32X32
+                    0, 0, pixelData, backData, 'B');
 #else // USE_FONT
           if (_dev!= NUL) {
             _dev->setLed(pixelData);
@@ -155,7 +216,7 @@ void Display::showMotion(motion_t motion)
 }
 
 /* 周期実行処理 */
-#define CYCLIC_INTERVAL 10
+#define CYCLIC_INTERVAL 0
 void Display::cyclicHandler(void)
 {
     static uint16_t cntdown = CYCLIC_INTERVAL;

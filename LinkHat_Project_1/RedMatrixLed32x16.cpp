@@ -2,7 +2,7 @@
 
 #ifdef USE_DISPLAY_RED_MATRIX_32X16
 
-#define DELAY_TIME 5
+//#define DELAY_TIME 5
 /* コンストラクタ */
 RedMatrixLed32x16::RedMatrixLed32x16(int ena, int lat, int clk, int sin1, int sin2, int sin3)
 {
@@ -18,6 +18,20 @@ RedMatrixLed32x16::RedMatrixLed32x16(int ena, int lat, int clk, int sin1, int si
 void RedMatrixLed32x16::begin(void)
 {
     Serial.println("RedMatrixLed32x16.begin()");
+
+    pinMode(_pinEna, OUTPUT);
+    pinMode(_pinLat, OUTPUT);
+    pinMode(_pinClk, OUTPUT);
+    pinMode(_pinSin1, OUTPUT);
+    pinMode(_pinSin2, OUTPUT);
+    pinMode(_pinSin3, OUTPUT);
+
+    digitalWrite(_pinEna, HIGH);
+    digitalWrite(_pinLat, LOW);
+    digitalWrite(_pinClk, LOW);
+    digitalWrite(_pinSin1, LOW);
+    digitalWrite(_pinSin2, LOW);
+    digitalWrite(_pinSin3, LOW);
 }
 
 void RedMatrixLed32x16::_disp(void)
@@ -32,7 +46,7 @@ void RedMatrixLed32x16::_disp(void)
     
     digitalWrite(_pinEna,0);
 
-    delay(DELAY_TIME);    
+//    delay(DELAY_TIME);    
 
     line++;
     if (line>= 16) line = 0;
@@ -67,11 +81,12 @@ void RedMatrixLed32x16::_update(void)
 
 void RedMatrixLed32x16::setPixel(int x, int y, DisplayDevice::disp_pixel_data_t data)
 {
-    bool pixOn = (data.rgb8.red!=0x0)? true: false;
+    bool pixOn = (data.rgb8.red!=0x0 || data.rgb8.green!=0x0 || data.rgb8.blue!=0x0)? true: false;
 
     if (x < 0 || x > DISPLAY_WIDTH - 1 || y < 0 || y > DISPLAY_HEIGHT - 1) return;
 
-    if (pixOn) {
+    if (pixOn)
+    {
         _dispRam[x/16][y] |= (0x8000u>>(x%16));
     }
     else {
@@ -80,7 +95,7 @@ void RedMatrixLed32x16::setPixel(int x, int y, DisplayDevice::disp_pixel_data_t 
 }
 
 /* 周期実行処理 */
-#define CYCLIC_INTERVAL 1
+#define CYCLIC_INTERVAL 0
 void RedMatrixLed32x16::cyclicHandler(void)
 {
     static uint16_t cntdown = CYCLIC_INTERVAL;

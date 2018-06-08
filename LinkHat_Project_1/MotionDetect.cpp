@@ -36,12 +36,13 @@ motion_t MotionDetect::get(void)
 //#define deltay ang_vel[1]
 void MotionDetect::detectArgorism(void)
 {
+    static int motion_set_disable_timer = 0;
     static motion_t last_motion = motion_none;
-    static motion_t cur_motion;
+    motion_t cur_motion;
     float ang_vel[NUM_OF_ANG_VEL];
 //Serial.print("@");
     _accelSensor->readAngularVelocity(ang_vel);
-    static uint16_t elapsed_time;
+
     int16_t  deltax, deltay;
  
     for(int i=7; i>0; i--){
@@ -58,27 +59,31 @@ void MotionDetect::detectArgorism(void)
         ((deltay < THRES_YES_Y_MAX) && (deltay > THRES_YES_Y_MIN )))  
     {
           cur_motion = motion_yes;
-          elapsed_time = millis();
     }
   
     // WONDER(首をかしげる）検出
     else if ((deltax < THRES_WONDER_X_MAX) && (deltax > THRES_WONDER_X_MIN ))   
     {
           cur_motion = motion_wonder;
-          elapsed_time = millis();
     } 
     else {
-        if(millis() - elapsed_time > 3000){
-          cur_motion = motion_idle;
-        }
+        cur_motion = motion_idle;
     }
 
-    // 前回値と違う場合だけ設定
-    if (cur_motion != last_motion) {
-        _motion = cur_motion;  // 未取得時上書き前提
-        Serial.println(_motion_debug_str[_motion]); // デバッグ用
+    // 更新許可期間中のみ更新
+    if ( 0 == motion_set_disable_timer)
+    {
+      // 前回値と違う場合だけ設定
+      if (cur_motion != last_motion) {
+          motion_set_disable_timer = 20;
+          _motion = cur_motion;  // 未取得時上書き前提
+          Serial.println(_motion_debug_str[_motion]); // デバッグ用
+      }
+  
+      last_motion = cur_motion;
     }
-    last_motion = cur_motion;
+    // 更新禁止期間中はこうしんしない。
+    else if (motion_set_disable_timer!= 0) motion_set_disable_timer--;
 }
 
 /* 定期実行処理 */

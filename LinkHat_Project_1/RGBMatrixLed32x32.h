@@ -42,7 +42,7 @@ private:
     uint8_t R;
     uint8_t G;
     uint8_t B;
-  } _dispRam[32][32];
+  } _dispRam[DISPLAY_HEIGHT][DISPLAY_WIDTH];
 
     void _update(void);
 };

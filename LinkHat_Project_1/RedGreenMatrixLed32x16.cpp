@@ -104,8 +104,14 @@ void RedGreenMatrixLed32x16::_update(void)
 void RedGreenMatrixLed32x16::setPixel(int x, int y, DisplayDevice::disp_pixel_data_t data)
 {
   bool redOn = (data.rgb8.red>=0x80)? true: false;
-  bool greenOn = (data.rgb8.green>=0x80)? true: false;
+  bool greenOn = (data.rgb8.green>=0x80 || data.rgb8.blue>=0x80)? true: false;
 
+//  Serial.print("redOn: "); Serial.print(redOn);
+//  Serial.print("\tgreenOn: "); Serial.print(greenOn);
+//  Serial.print("\tx: "); Serial.print(x);
+//  Serial.print("\ty: "); Serial.print(y);
+//  Serial.println("");
+  
   if (x < 0 || x > DISPLAY_WIDTH - 1 || y < 0 || y > DISPLAY_HEIGHT - 1) return;
 
   if (redOn) {
@@ -116,10 +122,10 @@ void RedGreenMatrixLed32x16::setPixel(int x, int y, DisplayDevice::disp_pixel_da
   }
 
   if (greenOn) {
-    _dispRam[0][y] |= (0x80000000u>>x);
+    _dispRam[1][y] |= (0x80000000u>>x);
   }
   else {
-    _dispRam[0][y] &= ~(0x80000000u>>x);
+    _dispRam[1][y] &= ~(0x80000000u>>x);
   }
 }
 

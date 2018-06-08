@@ -11,6 +11,7 @@ public:
         font_type_8x16 = 0,
         font_type_16x16,
         font_type_32x16,
+        font_type_32x32,
 
         font_t_count
         

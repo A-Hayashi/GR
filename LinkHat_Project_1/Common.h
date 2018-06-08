@@ -37,10 +37,12 @@
     #define USE_BOARD_GR_CITRUS
     #define USE_DISPLAY_RED_GREEN_MATRIX_32X16
     #define USE_ACCEL_SENSOR_ADXL343
+    #define USE_I2C_WIRE1
 #elif  defined(USE_HW_NO_2)  // 32x16 の300円赤色マトリックス LED + GR-CITRUS のやつ(佐野断念！！）
     #define USE_BOARD_GR_CITRUS
     #define USE_DISPLAY_RED_MATRIX_32X16
     #define USE_ACCEL_SENSOR_ADXL343
+    #define USE_I2C_WIRE4
 #elif  defined(USE_HW_NO_3)  // 32x16 の300円赤色マトリックス LED + ARDUINO-NANO? (さごう君制作中)
     #define USE_BOARD_ARDUINO
     #define USE_DISPLAY_RED_MATRIX_32X16
@@ -54,9 +56,11 @@
 #elif  defined(USE_HW_NO_5)  // 32x32 の巨大カラーマトリックス LED + GR-CITRUS のやつ（佐野制作中）
     #define USE_BOARD_GR_CITRUS
     #define USE_DISPLAY_COLOR_MATRIX_32X32
+    #define USE_FONT32X32
     #define USE_ACCEL_SENSOR_ADXL343
-//@#else
-//@    #error "No Target Hardware Defined!!!"
+    #define USE_I2C_WIRE4
+#else
+    #error "No Target Hardware Defined!!!"
 #endif
 
 /* 単一RGB LED を使う場合はキャラクターも使わない */

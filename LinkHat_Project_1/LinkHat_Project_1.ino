@@ -26,23 +26,17 @@
 #include "AccelAdxl343.h"
 
 #ifdef USE_ACCEL_SENSOR_ADXL343
-#if defined(USE_BOARD_GR_CITRUS)
+ #if defined(USE_I2C_WIRE4)
+  AccelAdxl343 accelSensor(&Wire4);
+ #elif  defined(USE_I2C_WIRE1)
   AccelAdxl343 accelSensor(&Wire1);
-#elif defined(USE_BOARD_ESP32)
+ #else
   AccelAdxl343 accelSensor(&Wire);
-
-#elif defined(USE_BOARD_ARDUINO)
-  AccelAdxl343 accelSensor(&Wire);
-
-#else  // defined(USE_BOARD_GR_CITRUS)
-  #error "No Board Specified"
-
-#endif  // defined(USE_BOARD_GR_CITRUS)
-
+ #endif
 #endif // USE_ACCEL_SENSOR_ADXL343
 
 #if defined(USE_DISPLAY_RED_MATRIX_32X16)
-  RedMatrixLed32x16 dispDev(1,2,3,4,5,6);  //int ena, int lat, int clk, int sig1, int sig2, int sig3
+  RedMatrixLed32x16 dispDev(6,4,3,13,10,9);  //int ena, int lat, int clk, int sin1, int sin2, int sin3
 #elif defined(USE_DISPLAY_RED_GREEN_MATRIX_32X16)
  RedGreenMatrixLed32x16 dispDev(10,17,16,15,14,6,9,4,3,18,SE_NOT_USED);  // int pinDg, int pinAle, int pinDr, int pinWe, int pinclk, int pinA0, int pinA1, int pinA2, int pinA3, int pinAB, int pinSe
   //林さんが Arduino でやっていたころのピン配なので、CITRUSのピンになっていない可能性あり。確認お願いします。
@@ -56,10 +50,13 @@
   #error "No Display Specified"
 #endif // USE_DISPLAY_RED_MATRIX_32X16
 
-#define CYCLIC_INTERVAL 10  // 10msec
+#define MAIN_CYCLIC_INTERVAL 10  // 10msec
+#define TIMER_CYCLIC_INTERVAL 1  // 1msec
 
 MotionDetect motionDetect;
 Display disp;
+
+static void timer_proc();
 
 void setup() {
   // put your setup code here, to run once:
@@ -79,6 +76,9 @@ void setup() {
 #else // USE_NO_DISPLAY
     disp.begin(NULL);  //  
 #endif // USE_NO_DISPLAY
+
+    MsTimer2::set(TIMER_CYCLIC_INTERVAL, timer_proc);
+    MsTimer2::start();
 }
 
 // デバッグ時はいずれかを有効に
@@ -92,7 +92,6 @@ void loop() {
     // put your main code here, to run repeatedly: 
     accelSensor.cyclicHandler();
     motionDetect.cyclicHandler();
-    disp.cyclicHandler();
     
     motion = motionDetect.get();
     if (motion_none != motion)
@@ -128,7 +127,11 @@ void loop() {
     Serial.println("");
 #endif // defined(DEBUG_ANG_VEL) || defined(DEBUG_AVARAGE) ||  defined(DEBUG_RAW) // for Test!
 
-    delay(CYCLIC_INTERVAL);  
+    delay(MAIN_CYCLIC_INTERVAL);  
 }
 
+static void timer_proc()
+{
+    disp.cyclicHandler();
+}
 
