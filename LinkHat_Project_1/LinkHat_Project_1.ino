@@ -98,6 +98,7 @@ void loop() {
     {
         disp.showMotion(motion);
     }
+    disp.updateIillumination();
   /*
     if (motion == motion_yes) {
         Serial.print("YES");
