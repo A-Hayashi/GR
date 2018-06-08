@@ -73,10 +73,10 @@ void RedGreenMatrixLed32x16::_sendData(uint8_t addrY, uint32_t *dataR, uint32_t 
   digitalWrite(_pinA1, (addrY >> 1) & 0x01);
   digitalWrite(_pinA2, (addrY >> 2) & 0x01);
   digitalWrite(_pinA3, (addrY >> 3) & 0x01);
-  digitalWrite(_pinWe, HIGH);
+  digitalWrite(_pinAle, HIGH);
 
   //内部バッファRAMへ書き込み
-  digitalWrite(_pinAle, HIGH);
+  digitalWrite(_pinWe, HIGH);
 
   //クリア
   digitalWrite(_pinWe, LOW);
