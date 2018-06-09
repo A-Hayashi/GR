@@ -222,6 +222,35 @@ void Display::_startIllumination(void)
 {
     _illuminationWait = 0;
     _illuminationStep = 0;
+    switch(_motion)
+    {
+        case motion_idle:    /* 待ち受け */
+          _illuminationStepMax = 1;
+          _illuminationChrCode = '@';
+          break;
+        case motion_yes:    /* いいね */
+ #ifdef USE_FONT32X32
+          _illuminationStepMax = 2;
+          _illuminationChrCode = 'C';
+ #else // USE_FONT32X32
+          _illuminationStepMax = 2;
+          _illuminationChrCode = 'K';
+ #endif // USE_FONT32X32
+          break;
+        case motion_wonder:  /* ？ */
+ #ifdef USE_FONT32X32
+          _illuminationStepMax = 4;
+          _illuminationChrCode = 'E';
+ #else // USE_FONT32X32
+          _illuminationStepMax = 4;
+          _illuminationChrCode = 'M';
+ #endif // USE_FONT32X32
+          break;
+        default:
+          _illuminationStepMax = 0;
+          _illuminationChrCode = '@';
+          break;
+    }
 }
 
 #define ILLUMINATION_WAIT 5
@@ -251,7 +280,7 @@ void Display::updateIillumination(void)
  #else // USE_FONT32X32
                         Charactors::font_type_32x16,
  #endif // USE_FONT32X32
-                        0, 0, pixelData, backData, draw_mode_layers, '@');
+                        0, 0, pixelData, backData, draw_mode_layers, _illuminationChrCode);
 #else // USE_FONT
 #endif // USE_FONT
                 break;
@@ -263,10 +292,10 @@ void Display::updateIillumination(void)
               _drawChar(
      #ifdef USE_FONT32X32
                         Charactors::font_type_32x32,
-                        0, 0, pixelData, backData, draw_mode_layers, 'H'+_illuminationStep);
+                        0, 0, pixelData, backData, draw_mode_layers, _illuminationChrCode +_illuminationStep);
      #else // USE_FONT32X32
                         Charactors::font_type_32x16,
-                        0, 0, pixelData, backData, draw_mode_layers, 'H'+_illuminationStep);
+                        0, 0, pixelData, backData, draw_mode_layers, _illuminationChrCode +_illuminationStep);
      #endif // USE_FONT32X32
 
     #else // USE_FONT
@@ -280,10 +309,10 @@ void Display::updateIillumination(void)
               _drawChar(
      #ifdef USE_FONT32X32
                         Charactors::font_type_32x32,
-                        0, 0, pixelData, backData, draw_mode_layers, 'H'+_illuminationStep);
+                        0, 0, pixelData, backData, draw_mode_layers, _illuminationChrCode +_illuminationStep);
      #else // USE_FONT32X32
                         Charactors::font_type_32x16,
-                        0, 0, pixelData, backData, draw_mode_layers, 'H'+_illuminationStep);
+                        0, 0, pixelData, backData, draw_mode_layers, _illuminationChrCode +_illuminationStep);
      #endif // USE_FONT32X32
 
     #else // USE_FONT
@@ -293,7 +322,7 @@ void Display::updateIillumination(void)
                 break;
         }
         _illuminationStep++;
-        if (_illuminationStep>=ILLUMINATION_STEP_COUNT) _illuminationStep = 0;
+        if (_illuminationStep>=_illuminationStepMax) _illuminationStep = 0;
     }
     else _illuminationWait--;
 }

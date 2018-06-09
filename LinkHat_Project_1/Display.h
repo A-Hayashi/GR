@@ -32,6 +32,8 @@ private:
     motion_t _motion;
     int _illuminationStep;
     int _illuminationWait;
+    int _illuminationStepMax;
+    int _illuminationChrCode;
 
     void _clearDisp(void);
     void _writeDisplay(int x, int y, int width, int height);

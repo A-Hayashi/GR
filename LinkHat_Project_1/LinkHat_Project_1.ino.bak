@@ -38,7 +38,7 @@
 #if defined(USE_DISPLAY_RED_MATRIX_32X16)
   RedMatrixLed32x16 dispDev(6,4,3,13,10,9);  //int ena, int lat, int clk, int sin1, int sin2, int sin3
 #elif defined(USE_DISPLAY_RED_GREEN_MATRIX_32X16)
- RedGreenMatrixLed32x16 dispDev(10,17,16,15,14,9,6,4,3,18,SE_NOT_USED);  // int pinDg, int pinAle, int pinDr, int pinWe, int pinclk, int pinA0, int pinA1, int pinA2, int pinA3, int pinAB, int pinSe
+ RedGreenMatrixLed32x16 dispDev(10,17,16,15,14,6,9,4,3,18,SE_NOT_USED);  // int pinDg, int pinAle, int pinDr, int pinWe, int pinclk, int pinA0, int pinA1, int pinA2, int pinA3, int pinAB, int pinSe
   //林さんが Arduino でやっていたころのピン配なので、CITRUSのピンになっていない可能性あり。確認お願いします。
 #elif defined(USE_DISPLAY_COLOR_MATRIX_32X32)
   RGBMatrixLed32x32 dispDev(14, 15, 16, 13, 10, 9, 6, 4, 3, 2, 19, 18, 1);  //int pinAle, int pinDr, int pinWe, int pinclk, int pinA0, int pinA1, int pinA2, int pinA3, int pinAB, int pinSe
