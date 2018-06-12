@@ -24,12 +24,12 @@ motion_t MotionDetect::get(void)
 
 // ジェスチャー判定基準
 #define THRES_YES_Y_MIN 20
-#define THRES_YES_Y_MAX 35
-#define THRES_YES_X_MIN -10
-#define THRES_YES_X_MAX 10
+#define THRES_YES_Y_MAX 1000
+#define THRES_YES_X_MIN -1000
+#define THRES_YES_X_MAX 1000
 
-#define THRES_WONDER_X_MIN 20
-#define THRES_WONDER_X_MAX 50
+#define THRES_WONDER_X_MIN 60
+#define THRES_WONDER_X_MAX 1000
 
 
 //#define deltax ang_vel[0]
@@ -53,7 +53,11 @@ void MotionDetect::detectArgorism(void)
     tmpy[0] = ang_vel[1];
     deltax = ang_vel[0] - tmpx[7];   //X方向の角度変化
     deltay = ang_vel[1] - tmpy[7];   //Y方向の角度変化
-
+//Serial.print("x: ");
+//Serial.print(deltax);
+//Serial.print("y: ");
+//Serial.print(deltay);
+//Serial.println("");
     // YES(首を縦にふる) 検出  
     if (((deltax < THRES_YES_X_MAX) && (deltax > THRES_YES_X_MIN )) &&
         ((deltay < THRES_YES_Y_MAX) && (deltay > THRES_YES_Y_MIN )))  
@@ -62,7 +66,7 @@ void MotionDetect::detectArgorism(void)
     }
   
     // WONDER(首をかしげる）検出
-    else if ((deltax < THRES_WONDER_X_MAX) && (deltax > THRES_WONDER_X_MIN ))   
+    else if ((abs(deltax) < THRES_WONDER_X_MAX) && (abs(deltax) > THRES_WONDER_X_MIN ))   
     {
           cur_motion = motion_wonder;
     } 

@@ -36,7 +36,7 @@ void Display::update(void)
 
 #ifdef USE_FONT
 
-#define DEBUG_DRAW_CHAR
+//#define DEBUG_DRAW_CHAR
 void Display::_clearDisp(void)
 {
     memset(_localBuf, 0, sizeof(_localBuf));
