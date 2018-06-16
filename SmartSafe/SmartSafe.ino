@@ -9,11 +9,14 @@
 
 #include <Servo.h> 
 #include "iodefine.h"
-
+#include "PS_PAD.h"
 Servo myservo;  // create servo object to control a servo 
 
 int potpin = 0;  // analog pin used to connect the potentiometer
 int val;    // variable to read the value from the analog pin 
+
+#define PS2_SEL        10
+PS_PAD PAD(PS2_SEL);
 
 void setup() 
 {
@@ -21,7 +24,7 @@ void setup()
   pinMode(A0, INPUT);
   pinMode(2, OUTPUT);
   pinMode(3, OUTPUT);
-
+  PAD.init();
   myservo.attach(5);  // attaches the servo on pin 9 to the servo object 
   Serial.begin(9600);
 
@@ -49,8 +52,8 @@ void loop()
 { 
 
   val = digitalRead(A0);            // reads the value of the potentiometer (value between 0 and 1023) 
-
-  Serial.print(MTU2TCNT_2,HEX);
+  PAD.poll();
+  Serial.print(PAD.read(PS_PAD::ANALOG_LY));
   Serial.print(" : ");
   Serial.println(val);
   if(val==HIGH){
