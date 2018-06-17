@@ -10,6 +10,7 @@
 #include <Servo.h> 
 #include "iodefine.h"
 #include "PS_PAD.h"
+#include "MFRC522.h"
 Servo myservo;  // create servo object to control a servo 
 
 int potpin = 0;  // analog pin used to connect the potentiometer
@@ -56,6 +57,9 @@ void loop()
   Serial.print(PAD.read(PS_PAD::ANALOG_LY));
   Serial.print(" : ");
   Serial.println(val);
+  Serial.print(" : ");
+  Serial.println(MTU2TCNT_2);
+
   if(val==HIGH){
     myservo.write(30);
     digitalWrite(2,HIGH);
